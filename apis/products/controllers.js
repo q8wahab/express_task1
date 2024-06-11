@@ -1,40 +1,73 @@
-const products = require("../../data");
+const Product = require("../../models/Product");
 
-const getAllProducts = (req, res) => {
-  res.json(products);
-};
-
-const getOneProduct = (req, res) => {
-  const id = req.params.id;
-
-  const product = products.find((product) => {
-    return product.id == id;
-  });
-
-  if (product) return res.json(product);
-  else {
-    return res.json("there is no product with this id");
-  }
-};
-
-const creatOneProduct = (req, res) => {
-  const { id, name, slug, image, description, quantity, color, price } =
-    req.body;
-  if (
-    id &&
-    name &&
-    slug &&
-    image &&
-    description &&
-    quantity &&
-    color &&
-    price
-  ) {
-    products.push(req.body);
-
+const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
     return res.json(products);
-  } else {
-    return res.json("Please provide all the information needed");
+  } catch (error) {
+    return res.json(error);
   }
 };
-module.exports = { getAllProducts, getOneProduct, creatOneProduct };
+
+const getOneProduct = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const product = await Product.findById(id);
+    if (product) {
+      return res.status(200).json(product);
+    } else {
+      return res.status(404).json({ msg: "product with this id, not found!" });
+    }
+  } catch (error) {
+    return res.status(error.status || 500).json(error);
+  }
+};
+
+const creatOneProduct = async (req, res) => {
+  try {
+    const product = await Product.create(req.body);
+    if (product) {
+      return res.status(201).json(product);
+    } else {
+      return res.status(404).json({ msg: "create product faild!" });
+    }
+  } catch (error) {
+    return res.status(error.status).json(error);
+  }
+};
+
+const updateOneProduct = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const product = await Product.findByIdAndUpdate(id, req.body);
+    if (product) {
+      return res.status(201).json(product);
+    } else {
+      return res.status(404).json({ msg: "update product faild!" });
+    }
+  } catch (error) {
+    return res.status(error.status).json(error);
+  }
+};
+
+const delOneProduct = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const product = await Product.findByIdAndDelete(id, req.body);
+    if (product) {
+      return res.status(201).json(product);
+    } else {
+      return res.status(404).json({ msg: "delete product faild!" });
+    }
+  } catch (error) {
+    return res.status(error.status).json(error);
+  }
+};
+
+module.exports = {
+  getAllProducts,
+  getOneProduct,
+  creatOneProduct,
+  updateOneProduct,
+  delOneProduct,
+};
